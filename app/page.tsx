@@ -221,7 +221,7 @@ export default function DashboardPage() {
 
     return(
     <div className="p-6">
-        <h1 className="text-3xl font-bold mb-4">Dashboard!</h1>
+        <h1 className="text-3xl font-bold mb-4">Dashboard! Deploy test!</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="p-6 bg-white shadow rounded-lg">
                 <h2 className="text-xl font-semibold mb-3 text-green-800">Today's Habits</h2>
