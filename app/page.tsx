@@ -53,11 +53,14 @@ export default function DashboardPage() {
             const {data, error} = await supabase
             .from("habits")
             .select("*")
-            .order("id", {ascending: true})
+            .order("created_at", {ascending: false})
 
-            if(!error && data) {
-                setHabits(data);
-            }}
+            if(error) {
+                console.log("Fetch habits error:", error.message);
+                return;
+            }
+            setHabits(data ?? []);
+            }
             fetchHabits()
         },[])
 
@@ -160,9 +163,18 @@ export default function DashboardPage() {
 
     const createHabit = async() => {
         if (newHabit.trim() === "") return;
+        const {
+            data: {user} } = await supabase.auth.getUser();
+        
+        if (!user) {
+            console.log("No user logged in");
+            return;
+        }
         const {data, error} = await supabase
         .from("habits")
-        .insert([{text: newHabit }])
+        .insert([{text: newHabit,
+            user_id : user.id,
+         }])
         .select()
 
         if (error) {
