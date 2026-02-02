@@ -186,20 +186,30 @@ const [habits, setHabits] = useState<any[]>([]);
         setNewHabit("");
     }
 
-    const addGoal = async() => {
+    const addGoal = async () => {
         if (newGoal.trim() === "") return;
-        const {data, error} = await supabase
-        .from("goals")
-        .insert([{text: newGoal}])
-        .select()
-        if (error) {
-            console.log("Insert error:", error);
+
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError || !user) {
+            console.log("No user logged in:", userError);
             return;
         }
-        setGoals([...goals, data[0]]);
+
+        const { data, error } = await supabase
+            .from("goals")
+            .insert([{ text: newGoal, user_id: user.id }])
+            .select();
+
+        if (error) {
+            console.log("Insert goal error:", error);
+            return;
+        }
+
+        setGoals((prev) => [...prev, data[0]]);
         setNewGoal("");
         setShowInput(false);
-    }
+        };
+
 
     const calculateWeeklyProgress = () => {
         if (habits.length === 0) return 0;
