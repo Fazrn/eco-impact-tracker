@@ -17,6 +17,9 @@ const [habits, setHabits] = useState<any[]>([]);
     const [newGoal, setNewGoal] = useState("");
     const [newHabit, setNewHabit] = useState("");
     const [heatMapData, setHeatMapData] = useState<{date: string, count: number, habitExists: boolean}[]>([]);
+    const [user, setUser] = useState<any>(null);
+    const [authLoading, setAuthLoading] = useState(true);
+    const router = useRouter();
 
     const deleteGoal = async (id: number) => {
         const {error} = await supabase
@@ -48,6 +51,23 @@ const [habits, setHabits] = useState<any[]>([]);
         }
         fetchGoals()
     },[])
+
+    useEffect(() => {
+        const loadUser = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            setUser(user);
+            setAuthLoading(false);
+        };
+
+        loadUser();
+
+        const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+            setUser(session?.user ?? null);
+            setAuthLoading(false);
+        });
+
+        return () => sub.subscription.unsubscribe();
+        }, []);
 
     useEffect(() => {
         const fetchHabits = async() => {
@@ -241,6 +261,33 @@ const [habits, setHabits] = useState<any[]>([]);
         const date = new Date(dateString);
         return date.toLocaleDateString("en-US", {weekday: "short"});
     }
+
+    if (authLoading) {
+        return <div className="p-6">Loading...</div>;
+    }
+
+    if (!user) {
+        return (
+            <div className="p-6 max-w-xl">
+            <h1 className="text-3xl font-bold mb-3">Dashboard</h1>
+            <div className="p-4 border rounded bg-white">
+                <p className="text-gray-800 mb-3">
+                To add habits and goals (and save your progress), please log in first.
+                </p>
+                <button
+                className="px-4 py-2 bg-green-600 text-white rounded"
+                onClick={() => router.push("/login")}
+                >
+                Go to Login
+                </button>
+                <p className="text-sm text-gray-500 mt-3">
+                You can still explore the app, but creating entries requires an account.
+                </p>
+            </div>
+            </div>
+        );
+    }
+
     return(
     <div className="p-6">
         <h1 className="text-3xl font-bold mb-4">Dashboard!</h1>
